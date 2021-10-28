@@ -15,7 +15,7 @@ const Positions = ({ navigation }) => {
             }
 
             const poses = JSON.parse(await AsyncStorage.getItem('positions'));
-            poses.forEach(pos => pos.selected = switchState);
+            poses?.forEach(pos => pos.selected = switchState);
             setPositions(poses);
         })()
     }, []);
@@ -43,7 +43,7 @@ const Positions = ({ navigation }) => {
         AsyncStorage.clear();
     }
 
-    
+
     const onSelect = id => {
         const pos = positions[id];
         pos.selected = !pos.selected;
@@ -53,14 +53,15 @@ const Positions = ({ navigation }) => {
 
     const onSelectAll = enabled => {
         setSwitchState(enabled);
+        if (!positions) return;
         const buf = [...positions];
         buf.forEach(pos => pos.selected = enabled);
         setPositions(buf);
     }
 
     const onMap = () => {
-        const selected = positions.filter(pos => pos.selected);
-        if (selected.length === 0) {
+        const selected = positions?.filter(pos => pos.selected);
+        if (!selected || selected.length === 0) {
             alert('Select at least one position');
             return;
         }
@@ -69,7 +70,7 @@ const Positions = ({ navigation }) => {
     }
 
     return (
-        <View>  
+        <View>
             <View style={styles.buttons}>
                 <Button onPress={onPosition} fontSize={13}>Pobierz i zapisz pozycję</Button>
                 <Button onPress={onDelete} fontSize={13}>Usuń wszystkie dane</Button>
@@ -81,8 +82,11 @@ const Positions = ({ navigation }) => {
                     </View>
                     <Switch style={styles.switch} trackColor={{ true: colors.primaryLight, false: 'lightgray' }} thumbColor={switchState ? colors.primary : 'white'} value={switchState} onValueChange={onSelectAll} />
                 </View>
-                <ActivityIndicator style={styles.loader} size="large" color={colors.primary} animating={isLoading} />
-                <FlatList contentContainerStyle={{ paddingBottom: 300,}} data={positions} renderItem={({ item, index }) => <ListItem id={index} item={item} onSelect={onSelect} />} keyExtractor={({ selected }, id) => id.toString()+selected} />
+                {isLoading ? 
+                    <ActivityIndicator style={styles.loader} size="large" color={colors.primary} animating={isLoading} />
+                :    
+                    <FlatList contentContainerStyle={{ paddingBottom: 300, }} data={positions} renderItem={({ item, index }) => <ListItem id={index} item={item} onSelect={onSelect} />} keyExtractor={({ selected }, id) => id.toString() + selected} />
+                }
             </View>
         </View>
     )
